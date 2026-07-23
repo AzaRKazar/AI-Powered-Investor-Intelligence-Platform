@@ -3,6 +3,15 @@ from sqlalchemy import text
 from database.postgres_sql import get_engine
 
 
+def _stringify_list_item(item) -> str:
+    """Some models return list items as strings, others as {label: value} dicts."""
+    if isinstance(item, str):
+        return item
+    if isinstance(item, dict):
+        return ": ".join(str(v) for v in item.values() if v)
+    return str(item)
+
+
 def save_metrics(
     company: str,
     year: int,
@@ -55,8 +64,14 @@ def save_metrics(
         "cash_flow": metrics.get("Cash Flow from Operating Activities") or metrics.get("cash_flow"),
         "total_assets": metrics.get("Total Assets") or metrics.get("total_assets"),
         "total_liabilities": metrics.get("Total Liabilities") or metrics.get("total_liabilities"),
-        "risk_factors": "\n".join(metrics.get("Top Risk Factors", []) or metrics.get("risk_factors", [])),
-        "growth_drivers": "\n".join(metrics.get("Top Growth Drivers", []) or metrics.get("growth_drivers", []))
+        "risk_factors": "\n".join(
+            _stringify_list_item(item)
+            for item in (metrics.get("Top Risk Factors") or metrics.get("risk_factors") or [])
+        ),
+        "growth_drivers": "\n".join(
+            _stringify_list_item(item)
+            for item in (metrics.get("Top Growth Drivers") or metrics.get("growth_drivers") or [])
+        )
     }
 
     with engine.begin() as connection:

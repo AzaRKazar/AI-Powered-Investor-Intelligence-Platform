@@ -20,7 +20,7 @@ def create_index(
     endpoint: str,
     api_key: str,
     index_name: str,
-    embedding_dimensions: int = 1536
+    embedding_dimensions: int = 768
 ) -> None:
     """
     Create Azure AI Search index.

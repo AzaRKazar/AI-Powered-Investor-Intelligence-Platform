@@ -55,8 +55,8 @@ dist/
 secrets.json
 credentials.json
 
-# Local Claude Code settings
-.claude/settings.local.json
+# Local Claude Code settings/state
+.claude/
 
 # Sample report PDFs (large binaries, not committed for now)
 *.pdf

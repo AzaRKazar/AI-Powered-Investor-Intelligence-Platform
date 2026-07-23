@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from langchain_openai import AzureOpenAIEmbeddings
 
+from llm.local_embeddings import get_embeddings
 from ingestion.pdf_to_markdown import PDFToMarkdownConverter
 from ingestion.semantic_chunker import chunk_markdown
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
@@ -86,12 +86,7 @@ def ingest_directory(input_dir: str) -> None:
     """
     Ingest all PDFs from a directory.
     """
-    embeddings = AzureOpenAIEmbeddings(
-        model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION")
-    )
+    embeddings = get_embeddings()
 
     vector_store = AzureAISearchVectorStore(
         endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),

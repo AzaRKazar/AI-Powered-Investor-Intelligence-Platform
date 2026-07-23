@@ -2,7 +2,7 @@ import shutil
 from fastapi import APIRouter, File, UploadFile
 from pathlib import Path
 import os
-from langchain_openai import AzureOpenAIEmbeddings
+from llm.local_embeddings import get_embeddings
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
 from ingestion.ingest_documents import ingest_document
 
@@ -28,12 +28,7 @@ async def upload_document(
         )
 
         # Initialize embeddings and vector store
-        embeddings = AzureOpenAIEmbeddings(
-            model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            api_version=os.getenv("AZURE_OPENAI_API_VERSION")
-        )
+        embeddings = get_embeddings()
 
         vector_store = AzureAISearchVectorStore(
             endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),

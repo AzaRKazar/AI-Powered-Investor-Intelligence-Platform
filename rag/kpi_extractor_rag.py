@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from dotenv import load_dotenv
 from pydantic import BaseModel, field_validator, Field
 
-from llm.azure_openai import get_structured_completion
+from llm.local_llm import get_structured_completion
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
 
 load_dotenv()
@@ -134,8 +134,7 @@ Instructions:
 - Use only the provided context.
 - Return null if unavailable.
 - Financial values must match the report exactly.
-- Risk factors should be concise.
-- Growth drivers should be concise.
+- Risk factors and growth drivers must each be a flat list of plain strings - one sentence per item, not objects with labels/descriptions.
 - Return valid JSON only.
 """
 

@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from vectorstore.azure_ai_search import AzureAISearchVectorStore, Retriever
-from llm.azure_openai import get_openai_client
+from llm.local_llm import get_llm_client
 
 router = APIRouter()
 
@@ -40,9 +40,9 @@ async def chat(request: ChatRequest):
         # Build chat prompt – include retrieved context and the user question
         prompt = f"You are an expert financial analyst. Use the following context from corporate reports to answer the user's question. If the context does not contain relevant information, politely indicate that you do not have enough data.\n\nContext:\n{context}\n\nUser Question: {request.question}\n\nAnswer:"
 
-        client = get_openai_client()
+        client = get_llm_client()
         response = client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+            model=os.getenv("OLLAMA_CHAT_MODEL"),
             messages=[{"role": "user", "content": prompt}]
         )
         answer = response.choices[0].message.content
