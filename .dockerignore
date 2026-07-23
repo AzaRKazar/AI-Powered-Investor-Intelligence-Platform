@@ -20,3 +20,6 @@ venv/
 
 # Documentation
 *.md
+
+# Sample PDFs - test fixtures, not needed at runtime (app receives uploads via the API)
+data/raw_pdfs/
