@@ -24,6 +24,14 @@ services:
       # Override .env's localhost value - within the compose network the
       # Postgres container is reachable by its service name, not localhost.
       POSTGRES_HOST: postgres
+      # .env may be set to "require" for testing against real Azure Postgres;
+      # this local container has no SSL listener at all.
+      POSTGRES_SSLMODE: disable
+      # Ollama runs on the host machine, not in this compose network -
+      # "localhost" inside the container means the container itself.
+      OLLAMA_BASE_URL: http://host.docker.internal:11434/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     depends_on:
