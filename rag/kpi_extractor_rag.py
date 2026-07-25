@@ -1,11 +1,10 @@
 import os
-from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, field_validator, Field
 
 from llm.azure_openai import get_structured_completion
-from vectorstore.azure_ai_search import AzureAISearchVectorStore
+from vectorstore.azure_ai_search import AzureAISearchVectorStore, Retriever
 
 load_dotenv()
 
@@ -21,54 +20,6 @@ class FinancialMetrics(BaseModel):
     growth_drivers: str | list | None = Field(None, alias="Top Growth Drivers")
 
 
-class Retriever:
-    def __init__(self, client):
-        self.client = client
-
-    def invoke(
-        self,
-        query: str,
-        company: str | None = None,
-        year: int | None = None,
-        top_k: int = 20
-    ) -> list:
-        """
-        Retrieve relevant chunks from Azure AI Search.
-        """
-        filter_expr = None
-
-        if company and year:
-            filter_expr = (
-                f"company eq '{company}' "
-                f"and year eq '{year}'"
-            )
-
-        results = (
-            self.client.search(
-                search_text=query,
-                top=top_k,
-                filter=filter_expr
-            )
-            if filter_expr
-            else self.client.search(
-                search_text=query,
-                top=top_k
-            )
-        )
-
-        documents = []
-
-        for result in results:
-            content = result.get("content", "")
-            documents.append(
-                SimpleNamespace(
-                    page_content=content
-                )
-            )
-
-        return documents
-
-
 def retrieve_context(
     retriever: Retriever,
     company: str,
@@ -81,7 +32,8 @@ def retrieve_context(
     competing for ranking within one broad combined query.
     """
     topic_queries = [
-        f"Revenue, net income, operating income, cash flow, total assets, total liabilities for {company} fiscal year {year}",
+        f"Income statement: revenue, net income, operating income, cash flow from operations for {company} fiscal year {year}",
+        f"Balance sheet: total assets and total liabilities for {company} fiscal year {year}",
         f"Top risk factors and business risks disclosed by {company} in fiscal year {year}",
         f"Growth drivers and growth strategy for {company} in fiscal year {year}",
     ]
@@ -138,6 +90,10 @@ Instructions:
 - Use only the provided context.
 - Return null for a key if the value is unavailable - never omit the key itself.
 - Financial values must match the report exactly.
+- Companies label these lines differently - match by meaning, not exact wording.
+  For example "Operating Income" may appear as "Income from operations" or
+  "Operating profit"; "Cash Flow from Operating Activities" may appear as
+  "Net cash provided by operating activities".
 - Risk factors and growth drivers must each be a flat list of plain strings - one sentence per item, not objects with labels/descriptions.
 - Return valid JSON only.
 """
@@ -175,6 +131,15 @@ def main() -> None:
     company = "Apple"
     year = 2024
 
+    from langchain_openai import AzureOpenAIEmbeddings
+
+    embeddings = AzureOpenAIEmbeddings(
+        model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION")
+    )
+
     vector_store = AzureAISearchVectorStore(
         endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
         api_key=os.getenv("AZURE_SEARCH_API_KEY"),
@@ -182,7 +147,8 @@ def main() -> None:
     )
 
     retriever = Retriever(
-        vector_store.client
+        vector_store.client,
+        embeddings=embeddings
     )
 
     results = extract_financial_metrics(

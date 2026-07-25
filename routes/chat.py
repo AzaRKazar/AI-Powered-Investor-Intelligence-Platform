@@ -1,6 +1,7 @@
 import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from langchain_openai import AzureOpenAIEmbeddings
 
 from vectorstore.azure_ai_search import AzureAISearchVectorStore, Retriever
 from llm.azure_openai import get_openai_client
@@ -21,7 +22,13 @@ async def chat(request: ChatRequest):
             api_key=os.getenv("AZURE_SEARCH_API_KEY"),
             index_name=os.getenv("AZURE_SEARCH_INDEX_NAME")
         )
-        retriever = Retriever(vector_store.client)
+        embeddings = AzureOpenAIEmbeddings(
+            model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION")
+        )
+        retriever = Retriever(vector_store.client, embeddings=embeddings)
 
         # Retrieve relevant context
         context = ""

@@ -2,6 +2,7 @@ import uuid
 
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+from azure.search.documents.models import VectorizedQuery
 from types import SimpleNamespace
 
 
@@ -54,11 +55,17 @@ class AzureAISearchVectorStore:
         print(f"Uploaded {uploaded}/{len(documents)} chunks.")
 
 class Retriever:
-    """Simple wrapper around Azure Search client for retrieving relevant chunks.
-    Mirrors the Retriever used in the RAG extractor.
+    """Wrapper around Azure Search client for retrieving relevant chunks.
+
+    Does hybrid search (keyword + vector) when an embeddings client is
+    provided - keyword-only search matches on crude word overlap and often
+    surfaces unrelated footnotes (e.g. "deferred tax assets and liabilities")
+    over the actual concise summary content (e.g. the balance sheet's
+    "Total liabilities" line) a query is really looking for.
     """
-    def __init__(self, client):
+    def __init__(self, client, embeddings=None):
         self.client = client
+        self.embeddings = embeddings
 
     def invoke(
         self,
@@ -76,18 +83,17 @@ class Retriever:
                 f"company eq '{company}' "
                 f"and year eq '{year}'"
             )
-        results = (
-            self.client.search(
-                search_text=query,
-                top=top_k,
-                filter=filter_expr
-            )
-            if filter_expr
-            else self.client.search(
-                search_text=query,
-                top=top_k
-            )
-        )
+
+        search_kwargs = {"search_text": query, "top": top_k}
+        if filter_expr:
+            search_kwargs["filter"] = filter_expr
+        if self.embeddings is not None:
+            query_vector = self.embeddings.embed_query(query)
+            search_kwargs["vector_queries"] = [
+                VectorizedQuery(vector=query_vector, k_nearest_neighbors=top_k, fields="content_vector")
+            ]
+
+        results = self.client.search(**search_kwargs)
         documents = []
         for result in results:
             content = result.get("content", "")
