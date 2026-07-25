@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from langchain_openai import AzureOpenAIEmbeddings
 
-from llm.local_embeddings import get_embeddings
 from ingestion.pdf_to_markdown import PDFToMarkdownConverter
 from ingestion.semantic_chunker import chunk_markdown
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
@@ -86,7 +86,22 @@ def ingest_directory(input_dir: str) -> None:
     """
     Ingest all PDFs from a directory.
     """
-    embeddings = get_embeddings()
+    embeddings = AzureOpenAIEmbeddings(
+        model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+        # SemanticChunker embeds nearly every sentence individually, which
+        # can exceed a new deployment's low default rate limit; the SDK's
+        # own backoff (honoring the server's Retry-After) needs more than
+        # the default 2 retries to ride that out instead of failing.
+        max_retries=10,
+        # Cap how many texts LangChain bundles into a single embedding
+        # request - a full document's real sentences are long enough that
+        # the default batch size (1000) can blow past this deployment's
+        # actual per-request/per-minute ceiling in one shot.
+        chunk_size=16
+    )
 
     vector_store = AzureAISearchVectorStore(
         endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),

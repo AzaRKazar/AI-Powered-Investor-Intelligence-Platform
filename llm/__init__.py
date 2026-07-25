@@ -3,4 +3,4 @@
 Makes the `llm` directory importable as a Python package.
 """
 
-__all__ = ["local_llm"]
+__all__ = ["azure_openai"]

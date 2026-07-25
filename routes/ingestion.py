@@ -2,7 +2,7 @@ import shutil
 from fastapi import APIRouter, File, UploadFile
 from pathlib import Path
 import os
-from llm.local_embeddings import get_embeddings
+from langchain_openai import AzureOpenAIEmbeddings
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
 from ingestion.ingest_documents import ingest_document
 
@@ -28,7 +28,17 @@ async def upload_document(
         )
 
         # Initialize embeddings and vector store
-        embeddings = get_embeddings()
+        embeddings = AzureOpenAIEmbeddings(
+            model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+            # See ingestion/ingest_documents.py - SemanticChunker's per-sentence
+            # embedding calls need more than the default retry budget to ride
+            # out a new deployment's low default rate limit.
+            max_retries=10,
+            chunk_size=16
+        )
 
         vector_store = AzureAISearchVectorStore(
             endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),

@@ -30,7 +30,7 @@ def chunk_markdown(
 
     Args:
         markdown_file: Markdown file path.
-        embeddings: Local (Ollama) embedding model.
+        embeddings: Azure OpenAI embedding model.
 
     Returns:
         List of semantic chunks.
@@ -45,9 +45,28 @@ def chunk_markdown(
     return splitter.create_documents([markdown_content])
 
 if __name__ == "__main__":
-    from llm.local_embeddings import get_embeddings
+    import os
+    from langchain_openai import AzureOpenAIEmbeddings
 
-    embeddings = get_embeddings()
+    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    api_version = os.getenv("AZURE_OPENAI_API_EMBEDDING_VERSION", "2023-05-15")
+    embedding_model = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+
+    if not endpoint or not api_key:
+        raise RuntimeError(
+            "Missing Azure OpenAI credentials. Set AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY in .env."
+        )
+
+    embeddings = AzureOpenAIEmbeddings(
+        model=embedding_model,
+        azure_endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version,
+        # See ingestion/ingest_documents.py for why these are set this way.
+        max_retries=10,
+        chunk_size=16
+    )
 
     markdown_file = "data/markdown/MSFT_2025.md"
 

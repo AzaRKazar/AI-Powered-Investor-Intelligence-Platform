@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from dotenv import load_dotenv
 from pydantic import BaseModel, field_validator, Field
 
-from llm.local_llm import get_structured_completion
+from llm.azure_openai import get_structured_completion
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
 
 load_dotenv()
@@ -75,30 +75,33 @@ def retrieve_context(
     year: int
 ) -> str:
     """
-    Retrieve broad financial context from the vector store.
+    Retrieve financial context from the vector store using separate
+    targeted queries per topic (financials / risks / growth drivers),
+    so each topic gets a fair shot at the top results instead of
+    competing for ranking within one broad combined query.
     """
-    query = f"""
-    Annual report financial statements,
-    income statement,
-    balance sheet,
-    cash flow statement,
-    risks,
-    growth drivers,
-    financial performance
-    for {company} fiscal year {year}
-    """
+    topic_queries = [
+        f"Revenue, net income, operating income, cash flow, total assets, total liabilities for {company} fiscal year {year}",
+        f"Top risk factors and business risks disclosed by {company} in fiscal year {year}",
+        f"Growth drivers and growth strategy for {company} in fiscal year {year}",
+    ]
 
-    documents = retriever.invoke(
-        query=query,
-        company=company,
-        year=year,
-        top_k=20
-    )
-    # print(documents)
-    return "\n\n".join(
-        doc.page_content
-        for doc in documents
-    )
+    seen_content = set()
+    combined_chunks = []
+
+    for query in topic_queries:
+        documents = retriever.invoke(
+            query=query,
+            company=company,
+            year=year,
+            top_k=10
+        )
+        for doc in documents:
+            if doc.page_content not in seen_content:
+                seen_content.add(doc.page_content)
+                combined_chunks.append(doc.page_content)
+
+    return "\n\n".join(combined_chunks)
 
 
 def build_extraction_prompt(
@@ -118,21 +121,22 @@ Year: {year}
 Context:
 {context}
 
-Extract the following information:
+Extract the following information and return it as a JSON object with
+EXACTLY these key names (case-sensitive, do not rename or abbreviate them):
 
-1. Revenue
-2. Net Income
-3. Operating Income
-4. Cash Flow from Operating Activities
-5. Total Assets
-6. Total Liabilities
-7. Top Risk Factors
-8. Top Growth Drivers
+- "Revenue"
+- "Net Income"
+- "Operating Income"
+- "Cash Flow from Operating Activities"
+- "Total Assets"
+- "Total Liabilities"
+- "Top Risk Factors"
+- "Top Growth Drivers"
 
 Instructions:
 
 - Use only the provided context.
-- Return null if unavailable.
+- Return null for a key if the value is unavailable - never omit the key itself.
 - Financial values must match the report exactly.
 - Risk factors and growth drivers must each be a flat list of plain strings - one sentence per item, not objects with labels/descriptions.
 - Return valid JSON only.

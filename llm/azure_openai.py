@@ -1,6 +1,6 @@
 import os
 
-from openai import OpenAI
+from openai import AzureOpenAI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,16 +9,17 @@ import json
 import openai
 
 
-def get_llm_client() -> OpenAI:
+def get_openai_client() -> AzureOpenAI:
     """
-    Create a client for the local Ollama server (OpenAI-compatible API).
+    Create Azure OpenAI client.
 
     Returns:
-        OpenAI-compatible client pointed at Ollama.
+        Azure OpenAI client.
     """
-    return OpenAI(
-        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
-        api_key="ollama"
+    return AzureOpenAI(
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
     )
 
 
@@ -33,16 +34,16 @@ def get_structured_completion(
     Args:
         prompt: Input prompt.
         response_model: Pydantic response model.
-        model: Ollama model name.
+        model: Azure OpenAI deployment name.
 
     Returns:
         Parsed response model.
     """
-    # Read model name from environment when not provided; do not fallback to a hardcoded name
-    model = model or os.getenv("OLLAMA_CHAT_MODEL")
+    # Read deployment name from environment when not provided; do not fallback to a hardcoded name
+    model = model or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
 
 
-    client = get_llm_client()
+    client = get_openai_client()
 
     messages = [
         {
@@ -55,7 +56,7 @@ def get_structured_completion(
         }
     ]
 
-    # Prefer structured parsing when supported by the model
+    # Prefer structured parsing when supported by the deployment
     try:
         response = client.beta.chat.completions.parse(
             model=model,
@@ -73,7 +74,7 @@ def get_structured_completion(
         return response.choices[0].message.parsed
 
     except openai.BadRequestError as exc:
-        # Fallback: some models don't support structured outputs.
+        # Fallback: some Azure deployments/models don't support structured outputs.
         # Request a JSON-only response and parse it with pydantic.
         msg = str(exc)
         if "response_format" in msg or "json_schema" in msg or "Structured Outputs" in msg:
@@ -99,7 +100,7 @@ def get_structured_completion(
                     try:
                         return response_model.model_validate({}) if hasattr(response_model, "model_validate") else response_model.parse_obj({})
                     except Exception:
-                        raise RuntimeError("Model returned null and cannot construct an empty instance; please check the model schema or use a model that supports structured outputs.")
+                        raise RuntimeError("Model returned null and cannot construct an empty instance; please check the model schema or use a deployment that supports structured outputs.")
 
                 # pydantic v2: model_validate_json; v1 fallback to parse_raw
                 if hasattr(response_model, "model_validate_json"):
