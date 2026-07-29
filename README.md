@@ -1,95 +1,129 @@
 # AI-Powered Investor Intelligence Platform
 
-An AI-powered platform for uploading company annual reports (PDFs), extracting KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot. Built as a portfolio project recreating the architecture of [Sandesh Hase's original implementation](https://github.com/Sandesh-hase/AI-Powered-Investor-Intelligence-Platform), with permission, then deployed independently to Azure.
+An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
-Status: early development. This README will grow as each subsystem (ingestion, KPI extraction, semantic search, RAG chat, dashboard) comes online.
+Built as a portfolio project recreating the architecture of [Sandesh Hase's original implementation](https://github.com/Sandesh-hase/AI-Powered-Investor-Intelligence-Platform), with permission, then independently provisioned, deployed, and extended on the author's own Azure subscription.
 
-## Prerequisites
+**Status: Phase 1 complete** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service.
+
+## How it works
+
+1. **Ingest** — a PDF (10-K/10-Q) is converted to Markdown (`pymupdf4llm`), then split into semantically coherent chunks (LangChain's `SemanticChunker`) using real embeddings.
+2. **Index** — each chunk is embedded (Azure OpenAI `text-embedding-ada-002`) and uploaded to Azure AI Search, which supports hybrid (keyword + vector) retrieval.
+3. **Extract** — a RAG pipeline retrieves topic-targeted context (income statement, balance sheet, risk factors, growth drivers as separate queries) and asks Azure OpenAI (`gpt-5-mini`) to return structured KPIs as JSON.
+4. **Store** — extracted KPIs land in Azure Database for PostgreSQL.
+5. **Serve** — a FastAPI backend exposes upload/chat/metrics endpoints; a server-rendered dashboard (Jinja2) shows KPI cards, a company deep-dive (risk factors / growth drivers), and a live RAG chat panel.
+
+## Screenshots
+
+*(Add your captured screenshots here: dashboard, company inspector, chat panel, and the Azure Portal resource group / cost management / AKS overview pages.)*
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | FastAPI, Python 3.12 |
+| LLM (chat + extraction) | Azure OpenAI — `gpt-5-mini` |
+| Embeddings | Azure OpenAI — `text-embedding-ada-002` |
+| Semantic search | Azure AI Search (hybrid keyword + vector) |
+| Database | Azure Database for PostgreSQL (Flexible Server) |
+| PDF → text | `pymupdf4llm` |
+| Chunking | LangChain `SemanticChunker` |
+| Frontend | Jinja2 + vanilla CSS/JS (server-rendered dashboard) |
+| Containerization | Docker |
+| Registry | Azure Container Registry (ACR) |
+| Orchestration | Azure Kubernetes Service (AKS) |
+| Package management | uv |
+
+## Local Setup
+
+### Prerequisites
 
 * Python 3.12+
-* UV Package Manager
-* Docker (for local Postgres and containerized runs)
+* [uv](https://astral.sh/uv) package manager
+* Docker (for local Postgres via Docker Compose)
+* An Azure subscription with Postgres, AI Search, and Azure OpenAI resources provisioned (see [Azure Resources](#azure-resources) below)
 
-## Setup
-
-### 1. Install UV
+### 1. Install dependencies
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Verify installation:
-
-```bash
-uv --version
-```
-
-### 2. Create Virtual Environment
-
-```bash
 uv venv
-```
-
-### 3. Activate Virtual Environment
-
-```bash
 source .venv/bin/activate
-```
-
-### 4. Install Dependencies
-
-```bash
 uv pip install -r requirements.txt
 ```
 
-### 5. Configure Environment Variables
+### 2. Configure environment variables
 
-Create a `.env` file and configure all required environment variables before running the application.
+```bash
+cp .env.example .env
+```
 
-### 6. Run the Application
+Fill in `.env` with your own Postgres, Azure AI Search, and Azure OpenAI credentials. See `.env.example` for every required key.
+
+### 3. Start local Postgres (optional — for local dev without touching Azure Postgres)
+
+```bash
+docker compose up -d postgres
+```
+
+### 4. Run the app
 
 ```bash
 python app.py
 ```
 
-## Project Features
+Visit **http://localhost:8000** for the dashboard.
 
-* Annual Report Upload & Processing
-* KPI Extraction using Azure OpenAI
-* Azure AI Search Integration
-* Semantic Search & Retrieval
-* RAG-based Chatbot
-* PostgreSQL KPI Storage
-* Investor Insights Dashboard
+## Running with Docker
 
-## Technology Stack
+```bash
+docker compose up -d
+```
 
-### Backend
+Builds the app image and runs it alongside a local Postgres container (see `docker-compose.yml`).
 
-* FastAPI
-* Python 3.12
+## Deploying to Azure
 
-### AI Services
+1. **Build and push to ACR**:
+   ```bash
+   docker build -t <your-acr-name>.azurecr.io/investor-intelligence-platform:latest .
+   az acr login --name <your-acr-name>
+   docker push <your-acr-name>.azurecr.io/investor-intelligence-platform:latest
+   ```
+2. **Create the Kubernetes secret** with your `.env` values (see `k8s/deployment.yaml` — it reads config via `envFrom.secretRef`):
+   ```bash
+   kubectl create secret generic investor-intel-secrets --from-literal=KEY=value ...
+   ```
+3. **Deploy**:
+   ```bash
+   kubectl apply -f k8s/deployment.yaml
+   kubectl apply -f k8s/service.yaml
+   kubectl get service investor-intel   # grab the external IP
+   ```
 
-* Azure OpenAI
-* Azure AI Search
+## Azure Resources
 
-### Database
+All resources live in a single dedicated resource group for easy teardown. Provisioned manually via the Azure Portal:
 
-* Azure PostgreSQL
+* **Azure Database for PostgreSQL Flexible Server** — Burstable tier, smallest SKU
+* **Azure AI Search** — Free (F0) tier
+* **Azure OpenAI** — `gpt-5-mini` (chat) + `text-embedding-ada-002` (embeddings) deployments
+* **Azure Container Registry** — Basic tier
+* **Azure Kubernetes Service** — single-node cluster, smallest viable x86 VM size available in-region
 
-### Deployment
+**Cost discipline**: a Cost Management budget alert is set on the resource group; Postgres and AKS are stopped between work sessions (both bill continuously while running, unlike AI Search's free tier and Azure OpenAI's pure pay-per-use pricing).
 
-* Docker
-* Azure Container Registry (ACR)
-* Azure Kubernetes Service (AKS)
+## Known Limitations
 
-### Package Management
+* **Table-formatted financial data can be lost during chunking.** `SemanticChunker` splits on prose sentence boundaries; some companies present certain figures (e.g. total liabilities) as Markdown tables rather than sentences, which can fail to embed cleanly. Confirmed on a real Tesla 10-K: most fields (revenue, net income, cash flow, risk factors, growth drivers) extracted correctly, but two table-only figures did not. A proper fix would need table-aware chunking at the ingestion layer.
+* **PDF quality varies.** A scanned/image-only PDF (no extractable text layer) will produce empty KPIs — this is a fundamental limit of text extraction, not a bug in the pipeline.
 
-* UV
+## Roadmap (Phase 2)
+
+Planned additions on top of this working base: LangChain/LangGraph orchestration for the RAG + KPI flow, CI/CD via GitHub Actions, a React frontend, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
 ## Notes
 
-* Ensure all Azure resources are configured before running the application.
-* Verify that PostgreSQL firewall rules allow access from the application.
-* Store secrets in environment variables and never commit `.env` files to source control.
+* Store secrets in `.env` and never commit it to source control (`.env.example` is the tracked template).
+* Verify PostgreSQL firewall rules allow access from wherever the app is actually running before debugging a "connection timeout" as anything more exotic.
