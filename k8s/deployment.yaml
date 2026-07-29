@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: investor-intel
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: investor-intel
+
+  template:
+    metadata:
+      labels:
+        app: investor-intel
+
+    spec:
+      containers:
+      - name: investor-intel
+
+        image: investerintelacrmo.azurecr.io/investor-intelligence-platform:latest
+
+        imagePullPolicy: Always
+
+        envFrom:
+        - secretRef:
+            name: investor-intel-secrets
+
+        ports:
+        - containerPort: 8000
