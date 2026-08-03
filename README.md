@@ -15,7 +15,17 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 
 ## Screenshots
 
-*(Add your captured screenshots here: dashboard, company inspector, chat panel, and the Azure Portal resource group / cost management / AKS overview pages.)*
+**Dashboard — KPI cards across all ingested companies**
+
+![Dashboard KPI cards](images/frontend.png)
+
+**Company deep-dive — AI-extracted risk factors and growth drivers (Microsoft)**
+
+![Company deep-dive with risk factors and growth drivers](images/msft_demo.png)
+
+**RAG chatbot — ask questions grounded in the ingested reports**
+
+![Chatbot panel](images/chatbot.png)
 
 ## Technology Stack
 
