@@ -2,7 +2,6 @@
 
 An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
-Built as a portfolio project recreating the architecture of [Sandesh Hase's original implementation](https://github.com/Sandesh-hase/AI-Powered-Investor-Intelligence-Platform), with permission, then independently provisioned, deployed, and extended on the author's own Azure subscription.
 
 **Status: Phase 1 complete** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service.
 
