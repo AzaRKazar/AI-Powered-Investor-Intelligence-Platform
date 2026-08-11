@@ -1,11 +1,17 @@
 import './Sidebar.css';
+import { useToasts } from '../../hooks/useToasts';
 import { StatsSummary } from '../StatsSummary/StatsSummary';
+import { UploadDropzone } from '../UploadDropzone/UploadDropzone';
+import { ToastContainer } from '../Toast/ToastContainer';
 
 interface SidebarProps {
   companyCount: number;
+  onUploadSuccess: () => void;
 }
 
-export function Sidebar({ companyCount }: SidebarProps) {
+export function Sidebar({ companyCount, onUploadSuccess }: SidebarProps) {
+  const { toasts, pushToast, dismissToast } = useToasts();
+
   return (
     <aside className="sidebar">
       <div className="logo-section">
@@ -21,9 +27,11 @@ export function Sidebar({ companyCount }: SidebarProps) {
         <span className="logo-text">Investor Intelligence</span>
       </div>
 
-      <div>Upload dropzone placeholder</div>
+      <UploadDropzone onUploadSuccess={onUploadSuccess} pushToast={pushToast} />
 
       <StatsSummary count={companyCount} />
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </aside>
   );
 }
