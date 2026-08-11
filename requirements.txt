@@ -8,8 +8,9 @@ sqlalchemy==2.0.50
 psycopg2-binary==2.9.10
 azure-core==1.35.1
 azure-search-documents==11.5.3
-langchain-core==1.4.0
+langchain-core==1.5.4
 langchain-openai==1.2.2
 langchain-experimental==0.4.2
+langgraph==1.2.11
 pymupdf4llm==1.27.2.3
 python-multipart==0.0.32
