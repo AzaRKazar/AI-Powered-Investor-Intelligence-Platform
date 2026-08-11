@@ -1,12 +1,13 @@
 import './App.css';
 import { useMetrics } from './hooks/useMetrics';
+import { Sidebar } from './components/Sidebar/Sidebar';
 
 function App() {
   const { metrics, isLoading, error } = useMetrics();
 
   return (
     <div className="dashboard-wrapper">
-      <div>Sidebar placeholder</div>
+      <Sidebar companyCount={metrics.length} />
       <div>
         <h1>AI-Powered Investor Intelligence Platform</h1>
         {isLoading && <p>Loading metrics...</p>}
