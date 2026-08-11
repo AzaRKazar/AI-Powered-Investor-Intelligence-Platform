@@ -2,7 +2,8 @@ from typing import TypedDict
 
 from langgraph.graph import StateGraph, START, END
 
-from rag.kpi_extractor_rag import FinancialMetrics, retrieve_context
+from llm.azure_openai import get_structured_completion
+from rag.kpi_extractor_rag import FinancialMetrics, build_extraction_prompt, retrieve_context
 from vectorstore.azure_ai_search import Retriever
 
 MAX_RETRIES = 2
@@ -39,9 +40,48 @@ def retrieve_node(state: KPIExtractionState) -> dict:
     return {"context": context, "retry_count": retry_count + 1}
 
 
+def build_focused_prompt(
+    company: str,
+    year: int,
+    context: str,
+    missing_fields: list[str]
+) -> str:
+    """Extend the base extraction prompt with a hint about fields that were
+    missing on a previous attempt, so a retry targets them directly instead
+    of re-asking an identical extraction question.
+    """
+    prompt = build_extraction_prompt(company=company, year=year, context=context)
+
+    if missing_fields:
+        fields_list = ", ".join(missing_fields)
+        prompt += (
+            f"\n\nNote: the following fields were missing from a previous "
+            f"extraction attempt against a smaller context - pay special "
+            f"attention to finding them in the context above: {fields_list}."
+        )
+
+    return prompt
+
+
 def extract_kpi_node(state: KPIExtractionState) -> dict:
-    """Run extraction prompt against `context`, populate `metrics`. Stub - logic not yet ported."""
-    raise NotImplementedError
+    """Run the extraction prompt against `context`, populate `metrics`.
+
+    When `missing_fields` is populated (i.e. this is a retry), the prompt
+    is extended with a hint pointing the model at exactly what to look for.
+    """
+    prompt = build_focused_prompt(
+        company=state["company"],
+        year=state["year"],
+        context=state["context"],
+        missing_fields=state["missing_fields"]
+    )
+
+    metrics = get_structured_completion(
+        prompt=prompt,
+        response_model=FinancialMetrics
+    )
+
+    return {"metrics": metrics}
 
 
 def validate_node(state: KPIExtractionState) -> dict:
