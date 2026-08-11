@@ -1,10 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import os
 from dotenv import load_dotenv
 
-from database.metrics import get_metrics
 from database.postgres_sql import create_database
 from database.create_table import create_tables
 from vectorstore.create_index import create_index
@@ -59,33 +57,13 @@ app.include_router(
     tags=["Chat"]
 )
 
+# Must be registered last: a root Mount("/", ...) matches every path, so
+# anything registered after it would be unreachable.
 app.mount(
-    "/static",
-    StaticFiles(directory="static"),
-    name="static"
+    "/",
+    StaticFiles(directory="frontend/dist", html=True),
+    name="frontend"
 )
-
-templates = Jinja2Templates(
-    directory="templates"
-)
-
-
-@app.get("/")
-def dashboard(request: Request):
-    """
-    Render dashboard UI.
-    """
-    metrics = get_metrics()
-
-    return templates.TemplateResponse(
-        request=request,
-        name="dashboard.html",
-        context={
-            "metrics": metrics,
-            "total_companies": len(metrics),
-            "total_reports": len(metrics)
-        }
-    )
 
 
 if __name__ == "__main__":
