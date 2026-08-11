@@ -18,6 +18,7 @@ class KPIExtractionState(TypedDict):
     metrics: FinancialMetrics | None
     missing_fields: list[str]
     retry_count: int
+    result: dict | None
 
 
 def retrieve_node(state: KPIExtractionState) -> dict:
@@ -103,13 +104,30 @@ def validate_node(state: KPIExtractionState) -> dict:
 
 
 def respond_node(state: KPIExtractionState) -> dict:
-    """Package final state into the output dict shape `save_metrics()` expects. Stub - logic not yet ported."""
-    raise NotImplementedError
+    """Package final `metrics` into the dict shape `save_metrics()` expects.
+
+    Reachable either with a fully validated FinancialMetrics or, once
+    retries are exhausted, a best-effort one - log which fields are still
+    missing in the latter case so it's visible rather than silently dropped.
+    """
+    if state["missing_fields"]:
+        print(
+            f"[kpi_extraction_graph] Extraction incomplete for "
+            f"{state['company']} {state['year']} after {state['retry_count']} "
+            f"attempt(s) - still missing: {', '.join(state['missing_fields'])}"
+        )
+
+    return {"result": state["metrics"].model_dump()}
 
 
 def should_retry(state: KPIExtractionState) -> str:
-    """Conditional edge: retry retrieval if under budget and fields are still missing."""
-    if state["missing_fields"] and state["retry_count"] < MAX_RETRIES:
+    """Conditional edge: retry retrieval if under budget and fields are still missing.
+
+    `retry_count` is the number of attempts already made (incremented by
+    retrieve_node), so `<= MAX_RETRIES` allows MAX_RETRIES retries beyond
+    the first attempt - MAX_RETRIES=2 means up to 3 attempts total.
+    """
+    if state["missing_fields"] and state["retry_count"] <= MAX_RETRIES:
         return "retry"
     return "done"
 
@@ -132,3 +150,27 @@ builder.add_conditional_edges(
 builder.add_edge("respond", END)
 
 graph = builder.compile()
+
+
+def run_kpi_extraction(
+    retriever: Retriever,
+    company: str,
+    year: int
+) -> dict:
+    """
+    Run the KPI extraction graph end-to-end. Drop-in replacement for
+    kpi_extractor_rag.extract_financial_metrics() - same signature,
+    same return shape.
+    """
+    final_state = graph.invoke({
+        "retriever": retriever,
+        "company": company,
+        "year": year,
+        "context": "",
+        "metrics": None,
+        "missing_fields": [],
+        "retry_count": 0,
+        "result": None
+    })
+
+    return final_state["result"]
