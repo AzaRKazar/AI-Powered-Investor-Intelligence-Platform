@@ -1,0 +1,137 @@
+.chat-panel {
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.chat-panel.collapsed {
+    width: 0;
+    min-width: 0;
+    border-left: none;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Chat Panel Header */
+.chat-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(255, 95, 162, 0.06) 0%, transparent 100%);
+    flex-shrink: 0;
+}
+
+.chat-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-panel-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(255, 95, 162, 0.32);
+}
+
+.chat-panel-icon svg {
+    width: 19px;
+    height: 19px;
+    color: white;
+}
+
+.chat-header-text {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.chat-header-sub {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.chat-panel-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.25s ease;
+}
+
+.chat-panel-toggle:hover {
+    background: var(--brand-bg);
+    border-color: var(--border-hover);
+    color: var(--brand-2);
+}
+
+.chat-panel-toggle svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Collapsed Chat Tab */
+.chat-collapsed-tab {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(100%);
+    background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
+    color: white;
+    padding: 14px 10px;
+    border-radius: 13px 0 0 13px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    transition: transform 0.3s var(--ease-smooth);
+    box-shadow: -4px 0 16px rgba(255, 95, 162, 0.35);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+.chat-collapsed-tab.visible {
+    transform: translateY(-50%) translateX(0);
+}
+
+.chat-collapsed-tab svg {
+    width: 20px;
+    height: 20px;
+    writing-mode: horizontal-tb;
+}
+
+.chat-collapsed-tab span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.chat-collapsed-tab:hover {
+    padding-right: 14px;
+    box-shadow: -6px 0 24px rgba(255, 95, 162, 0.45);
+}
