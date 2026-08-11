@@ -2,10 +2,11 @@ from typing import TypedDict
 
 from langgraph.graph import StateGraph, START, END
 
-from rag.kpi_extractor_rag import FinancialMetrics
+from rag.kpi_extractor_rag import FinancialMetrics, retrieve_context
 from vectorstore.azure_ai_search import Retriever
 
 MAX_RETRIES = 2
+RETRY_TOP_K = 20
 
 
 class KPIExtractionState(TypedDict):
@@ -19,8 +20,23 @@ class KPIExtractionState(TypedDict):
 
 
 def retrieve_node(state: KPIExtractionState) -> dict:
-    """Populate `context` from the vector store. Stub - logic not yet ported."""
-    raise NotImplementedError
+    """Populate `context` from the vector store.
+
+    `retry_count` doubles as the attempt number: attempt 0 uses the normal
+    top_k, later attempts (looped back from `validate`) widen it so a retry
+    actually has a shot at surfacing chunks the first pass missed.
+    """
+    retry_count = state["retry_count"]
+    top_k = RETRY_TOP_K if retry_count > 0 else 10
+
+    context = retrieve_context(
+        retriever=state["retriever"],
+        company=state["company"],
+        year=state["year"],
+        top_k=top_k
+    )
+
+    return {"context": context, "retry_count": retry_count + 1}
 
 
 def extract_kpi_node(state: KPIExtractionState) -> dict:

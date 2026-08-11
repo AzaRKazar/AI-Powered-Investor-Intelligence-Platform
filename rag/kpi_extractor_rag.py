@@ -23,7 +23,8 @@ class FinancialMetrics(BaseModel):
 def retrieve_context(
     retriever: Retriever,
     company: str,
-    year: int
+    year: int,
+    top_k: int = 10
 ) -> str:
     """
     Retrieve financial context from the vector store using separate
@@ -46,7 +47,7 @@ def retrieve_context(
             query=query,
             company=company,
             year=year,
-            top_k=10
+            top_k=top_k
         )
         for doc in documents:
             if doc.page_content not in seen_content:
