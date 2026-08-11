@@ -1,0 +1,259 @@
+/* Main Dashboard Panel */
+.main-content {
+    position: relative;
+    z-index: 1;
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.header-title-section {
+    text-align: center;
+}
+
+.header-title-section h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    background: linear-gradient(100deg, var(--brand-1) 0%, var(--brand-2) 50%, var(--brand-3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+}
+
+.header-title-section p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* KPI Cards Grid */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 22px;
+}
+
+/* KPI Card - vivid top accent bar, clean white surface, staggered entrance.
+   Accent color comes from --kpi-accent/--kpi-accent-bg, set inline per card
+   (see KpiCard.tsx) instead of :nth-child position coupling - this is also
+   the fix for a bug in the old app where the comparison bar referenced
+   undefined CSS variables and rendered with no fill color. */
+.kpi-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.4s var(--ease-spring), box-shadow 0.4s var(--ease-smooth), border-color 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: cardEnter 0.55s var(--ease-smooth) forwards;
+}
+
+.kpi-grid .kpi-card:nth-child(1) { animation-delay: 0.02s; }
+.kpi-grid .kpi-card:nth-child(2) { animation-delay: 0.07s; }
+.kpi-grid .kpi-card:nth-child(3) { animation-delay: 0.12s; }
+.kpi-grid .kpi-card:nth-child(4) { animation-delay: 0.17s; }
+.kpi-grid .kpi-card:nth-child(5) { animation-delay: 0.22s; }
+.kpi-grid .kpi-card:nth-child(6) { animation-delay: 0.27s; }
+
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--kpi-accent);
+}
+
+.kpi-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-lg);
+}
+
+.kpi-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.kpi-info h3 {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.kpi-info p {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.kpi-icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.35s var(--ease-spring);
+    background-color: var(--kpi-accent-bg);
+    color: var(--kpi-accent);
+}
+
+.kpi-card:hover .kpi-icon-wrapper {
+    transform: scale(1.1) rotate(-4deg);
+}
+
+.kpi-icon-wrapper svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke-width: 2.2;
+    stroke: var(--kpi-accent);
+}
+
+/* Metric values list inside cards */
+.kpi-values-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.kpi-value-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.kpi-company-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.company-badge-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.company-logo-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: white;
+}
+
+.kpi-val-number {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: proportional-nums;
+}
+
+/* Meter: fill carries the card's categorical color, track is a soft tint of it */
+.kpi-compare-bar-bg {
+    width: 100%;
+    height: 6px;
+    background-color: rgba(11, 11, 11, 0.06);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.kpi-compare-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s var(--ease-smooth);
+}
+
+/* Section Header (shared with CompanyDeepDive) */
+.section-header {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-title {
+    font-size: 19px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.section-title svg {
+    width: 19px;
+    height: 19px;
+    stroke: var(--brand-2);
+    stroke-width: 2.2;
+    fill: none;
+}
+
+/* Card box shared by CompanyDeepDive and EmptyState */
+.deep-dive-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+}
+
+/* Empty state (no metrics ingested yet) */
+.empty-state-card {
+    text-align: center;
+    padding: 60px 40px;
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
+    fill: none;
+    display: block;
+}
+
+.empty-state-card h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.empty-state-card p {
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin: 0 auto 24px;
+    font-size: 14px;
+}

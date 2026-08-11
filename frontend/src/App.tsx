@@ -1,6 +1,7 @@
 import './App.css';
 import { useMetrics } from './hooks/useMetrics';
 import { Sidebar } from './components/Sidebar/Sidebar';
+import { MainContent } from './components/MainContent/MainContent';
 
 function App() {
   const { metrics, isLoading, error, refetch } = useMetrics();
@@ -8,12 +9,17 @@ function App() {
   return (
     <div className="dashboard-wrapper">
       <Sidebar companyCount={metrics.length} onUploadSuccess={refetch} />
-      <div>
-        <h1>AI-Powered Investor Intelligence Platform</h1>
-        {isLoading && <p>Loading metrics...</p>}
-        {error && <p>Error: {error}</p>}
-        <pre>{JSON.stringify(metrics, null, 2)}</pre>
-      </div>
+      {error ? (
+        <main className="main-content">
+          <p>Failed to load metrics: {error}</p>
+        </main>
+      ) : isLoading ? (
+        <main className="main-content">
+          <p>Loading...</p>
+        </main>
+      ) : (
+        <MainContent metrics={metrics} />
+      )}
       <div>Chat panel placeholder</div>
     </div>
   );
