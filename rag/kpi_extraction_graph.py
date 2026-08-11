@@ -85,8 +85,21 @@ def extract_kpi_node(state: KPIExtractionState) -> dict:
 
 
 def validate_node(state: KPIExtractionState) -> dict:
-    """Check `metrics` for missing required fields, populate `missing_fields`. Stub - logic not yet ported."""
-    raise NotImplementedError
+    """Check `metrics` for null/empty fields, populate `missing_fields`.
+
+    Uses FinancialMetrics' own field aliases (the same "Revenue", "Net
+    Income", ... names the extraction prompt was told to return) so the
+    focused-retry hint in extract_kpi_node reads naturally to the model.
+    """
+    data = state["metrics"].model_dump()
+
+    missing = [
+        field.alias or name
+        for name, field in FinancialMetrics.model_fields.items()
+        if not data.get(name)
+    ]
+
+    return {"missing_fields": missing}
 
 
 def respond_node(state: KPIExtractionState) -> dict:
