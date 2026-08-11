@@ -230,6 +230,205 @@
     box-shadow: var(--shadow-md);
 }
 
+/* Company Deep Dive Inspector */
+.inspector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.inspector-meta h2 {
+    font-size: 23px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.inspector-meta p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.company-selector-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.company-selector-wrapper label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.company-select {
+    background: var(--bg-primary);
+    border: 1.5px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.company-select:hover {
+    border-color: var(--border-hover);
+}
+
+.company-select:focus {
+    border-color: var(--brand-2);
+    box-shadow: 0 0 0 3px var(--brand-bg);
+}
+
+/* Side-by-side Qualitative Columns */
+.qualitative-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+@media (max-width: 900px) {
+    .qualitative-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.qualitative-column {
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: transform 0.3s ease;
+}
+
+.qualitative-column:hover {
+    transform: translateY(-2px);
+}
+
+.qual-col-title {
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+}
+
+.drivers-title {
+    color: var(--status-good);
+}
+
+.drivers-title svg {
+    stroke: var(--status-good);
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke-width: 2.5;
+}
+
+.risks-title {
+    color: var(--status-critical);
+}
+
+.risks-title svg {
+    stroke: var(--status-critical);
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke-width: 2.5;
+}
+
+.qual-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.qual-item {
+    display: flex;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    font-weight: 500;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.qual-item:hover {
+    transform: translateX(2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.driver-item-icon,
+.risk-item-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    margin-top: 0;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.driver-item-icon {
+    background: var(--status-good-bg);
+}
+
+.risk-item-icon {
+    background: var(--status-critical-bg);
+}
+
+.qual-item-icon svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke-width: 3;
+}
+
+.driver-item-icon svg {
+    stroke: var(--status-good);
+}
+
+.risk-item-icon svg {
+    stroke: var(--status-critical);
+}
+
+/* No qualitative data empty state */
+.no-qualitative {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    gap: 12px;
+}
+
+.no-qualitative svg {
+    width: 48px;
+    height: 48px;
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
+    fill: none;
+}
+
 /* Empty state (no metrics ingested yet) */
 .empty-state-card {
     text-align: center;

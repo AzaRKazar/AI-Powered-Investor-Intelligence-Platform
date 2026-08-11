@@ -1,6 +1,7 @@
 import './MainContent.css';
 import type { MetricRow } from '../../api/types';
 import { KpiGrid } from '../KpiGrid/KpiGrid';
+import { CompanyDeepDive } from '../CompanyDeepDive/CompanyDeepDive';
 import { EmptyState } from './EmptyState';
 
 interface MainContentProps {
@@ -17,7 +18,14 @@ export function MainContent({ metrics }: MainContentProps) {
         </div>
       </header>
 
-      {metrics.length > 0 ? <KpiGrid metrics={metrics} /> : <EmptyState />}
+      {metrics.length > 0 ? (
+        <>
+          <KpiGrid metrics={metrics} />
+          <CompanyDeepDive metrics={metrics} />
+        </>
+      ) : (
+        <EmptyState />
+      )}
     </main>
   );
 }
