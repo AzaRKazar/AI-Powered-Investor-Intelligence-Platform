@@ -1,9 +1,22 @@
 import './ChatPanel.css';
+import { ChatMessageList } from './ChatMessageList';
+import type { ChatMessageData } from './ChatMessage';
 
 interface ChatPanelProps {
   collapsed: boolean;
   onToggleCollapsed: () => void;
 }
+
+// Temporary seed data to verify bubble/markdown styling before the next
+// step wires this up to the real POST /api/chat call.
+const SAMPLE_MESSAGES: ChatMessageData[] = [
+  { id: 'sample-1', role: 'user', text: 'What was MSFT revenue in 2025?' },
+  {
+    id: 'sample-2',
+    role: 'bot',
+    text: "MSFT reported **$281,724** in revenue for fiscal year 2025. Key growth drivers include:\n\n- Intelligent Cloud revenue increased driven by Azure\n- Productivity and Business Processes revenue increased driven by Microsoft 365",
+  },
+];
 
 export function ChatPanel({ collapsed, onToggleCollapsed }: ChatPanelProps) {
   return (
@@ -35,7 +48,8 @@ export function ChatPanel({ collapsed, onToggleCollapsed }: ChatPanelProps) {
         </button>
       </div>
 
-      <div>Chat messages placeholder</div>
+      <ChatMessageList messages={SAMPLE_MESSAGES} isTyping={true} />
+
       <div>Chat composer placeholder</div>
     </aside>
   );
