@@ -227,6 +227,109 @@
     30% { transform: translateY(-6px); opacity: 1; }
 }
 
+/* Chat Input Area */
+.chat-input-area {
+    border-top: 1px solid var(--border-color);
+    padding: 12px 16px 16px;
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+}
+
+.chat-context-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-context-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.chat-context-select {
+    flex: 1;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.chat-context-select:focus {
+    border-color: var(--brand-2);
+    box-shadow: 0 0 0 3px var(--brand-bg);
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.chat-text-input {
+    flex: 1;
+    background: var(--bg-primary);
+    border: 1.5px solid var(--border-color);
+    border-radius: 13px;
+    color: var(--text-primary);
+    padding: 12px 16px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.chat-text-input::placeholder {
+    color: var(--text-muted);
+}
+
+.chat-text-input:focus {
+    border-color: var(--brand-2);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 0 3px var(--brand-bg);
+}
+
+.chat-send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    border: none;
+    background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s var(--ease-spring);
+    box-shadow: 0 4px 14px rgba(255, 95, 162, 0.32);
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.08) translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 95, 162, 0.42);
+}
+
+.chat-send-btn:active {
+    transform: scale(0.94);
+}
+
+.chat-send-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* Collapsed Chat Tab */
 .chat-collapsed-tab {
     position: fixed;

@@ -25,7 +25,7 @@ function App() {
         ) : (
           <MainContent metrics={metrics} />
         )}
-        <ChatPanel collapsed={chatCollapsed} onToggleCollapsed={toggleChat} />
+        <ChatPanel metrics={metrics} collapsed={chatCollapsed} onToggleCollapsed={toggleChat} />
       </div>
 
       <div
