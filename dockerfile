@@ -1,4 +1,17 @@
-# Use a lightweight Python image for the runtime
+# Stage 1: build the React frontend
+FROM node:24-slim AS frontend-build
+
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+
+RUN npm ci
+
+COPY frontend/ ./
+
+RUN npm run build
+
+# Stage 2: Python runtime, serving the built frontend as static files
 FROM python:3.12-slim
 
 # Set the working directory inside the container
@@ -12,6 +25,10 @@ RUN uv pip install --system -r requirements.txt
 
 # Copy application code into the container
 COPY . /app
+
+# Copy the frontend build last so it always wins over anything stray
+# already present in the build context.
+COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 # Expose the port the app will run on
 EXPOSE 8000
