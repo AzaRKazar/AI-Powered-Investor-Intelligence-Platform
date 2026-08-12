@@ -20,7 +20,11 @@ spec:
       containers:
       - name: investor-intel
 
-        image: investerintelacrmo.azurecr.io/investor-intelligence-platform:latest
+        # Placeholder - the deploy workflow (.github/workflows/deploy.yml)
+        # overrides this via `kubectl set image` right after applying, using
+        # the real ACR login server from a GitHub secret. Update this value
+        # too if ever applying this manifest by hand.
+        image: <ACR_LOGIN_SERVER>/investor-intelligence-platform:latest
 
         imagePullPolicy: Always
 

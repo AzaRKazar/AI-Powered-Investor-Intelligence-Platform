@@ -140,6 +140,22 @@ Builds the app image (a multi-stage build that compiles the React frontend, then
    kubectl get service investor-intel   # grab the external IP
    ```
 
+## Continuous Deployment
+
+`.github/workflows/deploy.yml` builds the image, pushes it to ACR, and rolls it out to AKS — but it's **manual-trigger only** (`workflow_dispatch`), not on every push, since AKS bills continuously while running and this project stops it between sessions rather than keeping it up 24/7.
+
+To run it (from the Actions tab, or `gh workflow run deploy.yml`), the repo needs these GitHub Actions secrets first:
+
+| Secret | Where to get it |
+|---|---|
+| `ACR_LOGIN_SERVER` | ACR resource → Overview → "Login server" (e.g. `<name>.azurecr.io`) |
+| `ACR_USERNAME` / `ACR_PASSWORD` | ACR resource → Access keys (enable "Admin user") |
+| `KUBE_CONFIG_B64` | `az aks get-credentials --resource-group investor-intelligence-rg --name <aks-name> --file - \| base64 -w0` |
+
+Set them with `gh secret set <NAME>` or via the repo's Settings → Secrets and variables → Actions.
+
+**Status: workflow is written and YAML-validated, but not yet exercised against a live cluster** — ACR and AKS are currently torn down between sessions for cost control (see below), so this hasn't run end-to-end yet. It's ready to go the next time both exist.
+
 ## Azure Resources
 
 All resources live in a single dedicated resource group for easy teardown. Provisioned manually via the Azure Portal:
@@ -161,7 +177,9 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 
 **Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), a React + TypeScript frontend (Vite) replacing the server-rendered dashboard, and CI via GitHub Actions (frontend lint/build, backend import check + pytest suite, Docker build — on every push/PR to `master`).
 
-**Planned:** automated deploy to AKS (manual-trigger, once ACR/AKS are recreated — currently torn down between sessions for cost control), and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
+**Also done:** a pytest regression suite for the LangGraph extraction pipeline (see [Running tests](#running-tests)), and a manual-trigger CD workflow to AKS (see [Continuous Deployment](#continuous-deployment) — written and validated, not yet exercised against a live cluster).
+
+**Planned:** exercising the CD workflow for real once ACR/AKS are recreated, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
 ## Notes
 
