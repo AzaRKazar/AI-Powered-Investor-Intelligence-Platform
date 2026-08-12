@@ -7,6 +7,8 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 
 **Status: Phase 1 complete, Phase 2 Tier 1 complete** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service via a one-click CD workflow; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI (build/lint/test) runs on every push via GitHub Actions.
 
+For the full system design — component diagrams, sequence flows, database/index schemas, API contracts, and the reasoning behind each major decision — see **[docs/architecture.md](docs/architecture.md)**.
+
 ## How it works
 
 1. **Ingest** — a PDF (10-K/10-Q) is converted to Markdown (`pymupdf4llm`), then split into semantically coherent chunks (LangChain's `SemanticChunker`) using real embeddings.
