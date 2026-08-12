@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  backend:
+    name: Backend (import + compile check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install uv
+      - run: uv pip install --system -r requirements.txt
+
+      # Byte-compiles every module to catch syntax errors repo-wide.
+      - run: python -m compileall -q database ingestion llm rag routes vectorstore app.py
+
+      # Imports the real FastAPI app, exercising the actual router/module
+      # graph. Safe without live Azure credentials: every client (DB engine,
+      # Azure OpenAI, Azure AI Search) is constructed lazily inside request
+      # handlers/startup, never at import time.
+      - run: python -c "import app"
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

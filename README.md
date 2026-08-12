@@ -1,9 +1,11 @@
 # AI-Powered Investor Intelligence Platform
 
+[![CI](https://github.com/AzaRKazar/AI-Powered-Investor-Intelligence-Platform/actions/workflows/ci.yml/badge.svg)](https://github.com/AzaRKazar/AI-Powered-Investor-Intelligence-Platform/actions/workflows/ci.yml)
+
 An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
 
-**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; KPI extraction now runs as a LangGraph state machine with confidence-based retries, and the dashboard is now a React + TypeScript SPA.
+**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI runs on every push via GitHub Actions.
 
 ## How it works
 
@@ -148,9 +150,9 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 
 ## Roadmap (Phase 2)
 
-**Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), and a React + TypeScript frontend (Vite) replacing the server-rendered dashboard.
+**Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), a React + TypeScript frontend (Vite) replacing the server-rendered dashboard, and CI via GitHub Actions (frontend lint/build, backend import check, Docker build — on every push/PR to `master`).
 
-**Planned:** CI/CD via GitHub Actions, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
+**Planned:** automated deploy to AKS (manual-trigger, once ACR/AKS are recreated — currently torn down between sessions for cost control), and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
 ## Notes
 
