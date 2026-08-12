@@ -3,7 +3,7 @@
 An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
 
-**Status: Phase 1 complete** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service.
+**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; the dashboard is now a React + TypeScript SPA.
 
 ## How it works
 
@@ -11,7 +11,7 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 2. **Index** — each chunk is embedded (Azure OpenAI `text-embedding-ada-002`) and uploaded to Azure AI Search, which supports hybrid (keyword + vector) retrieval.
 3. **Extract** — a RAG pipeline retrieves topic-targeted context (income statement, balance sheet, risk factors, growth drivers as separate queries) and asks Azure OpenAI (`gpt-5-mini`) to return structured KPIs as JSON.
 4. **Store** — extracted KPIs land in Azure Database for PostgreSQL.
-5. **Serve** — a FastAPI backend exposes upload/chat/metrics endpoints; a server-rendered dashboard (Jinja2) shows KPI cards, a company deep-dive (risk factors / growth drivers), and a live RAG chat panel.
+5. **Serve** — a FastAPI backend exposes upload/chat/metrics endpoints; a React SPA (built with Vite, served as static files by FastAPI) shows KPI cards, a company deep-dive (risk factors / growth drivers), and a live RAG chat panel.
 
 ## Screenshots
 
@@ -38,7 +38,7 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 | Database | Azure Database for PostgreSQL (Flexible Server) |
 | PDF → text | `pymupdf4llm` |
 | Chunking | LangChain `SemanticChunker` |
-| Frontend | Jinja2 + vanilla CSS/JS (server-rendered dashboard) |
+| Frontend | React + TypeScript (Vite) |
 | Containerization | Docker |
 | Registry | Azure Container Registry (ACR) |
 | Orchestration | Azure Kubernetes Service (AKS) |
@@ -50,10 +50,11 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 
 * Python 3.12+
 * [uv](https://astral.sh/uv) package manager
+* Node.js 20+ (for the frontend)
 * Docker (for local Postgres via Docker Compose)
 * An Azure subscription with Postgres, AI Search, and Azure OpenAI resources provisioned (see [Azure Resources](#azure-resources) below)
 
-### 1. Install dependencies
+### 1. Install backend dependencies
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -62,7 +63,15 @@ source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
-### 2. Configure environment variables
+### 2. Install frontend dependencies
+
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+### 3. Configure environment variables
 
 ```bash
 cp .env.example .env
@@ -70,19 +79,30 @@ cp .env.example .env
 
 Fill in `.env` with your own Postgres, Azure AI Search, and Azure OpenAI credentials. See `.env.example` for every required key.
 
-### 3. Start local Postgres (optional — for local dev without touching Azure Postgres)
+### 4. Start local Postgres (optional — for local dev without touching Azure Postgres)
 
 ```bash
 docker compose up -d postgres
 ```
 
-### 4. Run the app
+### 5. Run the app
 
+**Frontend development** (hot reload, two processes):
 ```bash
+# Terminal 1 - backend API
+python app.py
+
+# Terminal 2 - frontend dev server, proxies /api and /health to :8000
+cd frontend && npm run dev
+```
+Visit **http://localhost:5173**.
+
+**Backend-only / production-like** (one process, matches how Docker runs it):
+```bash
+cd frontend && npm run build && cd ..
 python app.py
 ```
-
-Visit **http://localhost:8000** for the dashboard.
+Visit **http://localhost:8000** — FastAPI serves the built React app directly.
 
 ## Running with Docker
 
@@ -90,7 +110,7 @@ Visit **http://localhost:8000** for the dashboard.
 docker compose up -d
 ```
 
-Builds the app image and runs it alongside a local Postgres container (see `docker-compose.yml`).
+Builds the app image (a multi-stage build that compiles the React frontend, then copies the result into the Python runtime image — no manual `npm` steps needed) and runs it alongside a local Postgres container (see `docker-compose.yml`).
 
 ## Deploying to Azure
 
@@ -130,7 +150,9 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 
 ## Roadmap (Phase 2)
 
-Planned additions on top of this working base: LangChain/LangGraph orchestration for the RAG + KPI flow, CI/CD via GitHub Actions, a React frontend, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
+**Done:** React + TypeScript frontend (Vite), replacing the server-rendered dashboard.
+
+**Planned:** LangChain/LangGraph orchestration for the RAG + KPI flow, CI/CD via GitHub Actions, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
 ## Notes
 
