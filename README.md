@@ -3,13 +3,13 @@
 An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
 
-**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; the dashboard is now a React + TypeScript SPA.
+**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; KPI extraction now runs as a LangGraph state machine with confidence-based retries, and the dashboard is now a React + TypeScript SPA.
 
 ## How it works
 
 1. **Ingest** — a PDF (10-K/10-Q) is converted to Markdown (`pymupdf4llm`), then split into semantically coherent chunks (LangChain's `SemanticChunker`) using real embeddings.
 2. **Index** — each chunk is embedded (Azure OpenAI `text-embedding-ada-002`) and uploaded to Azure AI Search, which supports hybrid (keyword + vector) retrieval.
-3. **Extract** — a RAG pipeline retrieves topic-targeted context (income statement, balance sheet, risk factors, growth drivers as separate queries) and asks Azure OpenAI (`gpt-5-mini`) to return structured KPIs as JSON.
+3. **Extract** — a LangGraph state machine (`retrieve → extract_kpi → validate → respond`) retrieves topic-targeted context (income statement, balance sheet, risk factors, growth drivers as separate queries) and asks Azure OpenAI (`gpt-5-mini`) to return structured KPIs as JSON. If validation finds fields still missing, it loops back with a wider search and a prompt focused on exactly what's missing, up to a retry limit, instead of silently returning an incomplete result.
 4. **Store** — extracted KPIs land in Azure Database for PostgreSQL.
 5. **Serve** — a FastAPI backend exposes upload/chat/metrics endpoints; a React SPA (built with Vite, served as static files by FastAPI) shows KPI cards, a company deep-dive (risk factors / growth drivers), and a live RAG chat panel.
 
@@ -38,6 +38,7 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 | Database | Azure Database for PostgreSQL (Flexible Server) |
 | PDF → text | `pymupdf4llm` |
 | Chunking | LangChain `SemanticChunker` |
+| KPI extraction orchestration | LangGraph (state machine + confidence-based retry) |
 | Frontend | React + TypeScript (Vite) |
 | Containerization | Docker |
 | Registry | Azure Container Registry (ACR) |
@@ -150,9 +151,9 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 
 ## Roadmap (Phase 2)
 
-**Done:** React + TypeScript frontend (Vite), replacing the server-rendered dashboard.
+**Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), and a React + TypeScript frontend (Vite) replacing the server-rendered dashboard.
 
-**Planned:** LangChain/LangGraph orchestration for the RAG + KPI flow, CI/CD via GitHub Actions, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
+**Planned:** CI/CD via GitHub Actions, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
 ## Notes
 

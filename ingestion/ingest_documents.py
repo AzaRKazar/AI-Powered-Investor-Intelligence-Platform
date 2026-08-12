@@ -7,7 +7,7 @@ from langchain_openai import AzureOpenAIEmbeddings
 from ingestion.pdf_to_markdown import PDFToMarkdownConverter
 from ingestion.semantic_chunker import chunk_markdown
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
-from rag.kpi_extractor_rag import extract_financial_metrics
+from rag.kpi_extraction_graph import run_kpi_extraction
 from database.save_metrics import save_metrics
 from vectorstore.azure_ai_search import Retriever
 
@@ -71,7 +71,7 @@ def ingest_document(
     )
 
     # Extract financial metrics using the newly ingested data
-    metrics = extract_financial_metrics(
+    metrics = run_kpi_extraction(
         retriever=Retriever(vector_store.client, embeddings=embeddings),
         company=company,
         year=int(year) if year.isdigit() else None
