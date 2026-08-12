@@ -23,9 +23,6 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 
 ![Company deep-dive with risk factors and growth drivers](images/msft_demo.png)
 
-**RAG chatbot — ask questions grounded in the ingested reports**
-
-![Chatbot panel](images/chatbot.png)
 
 ## Technology Stack
 
