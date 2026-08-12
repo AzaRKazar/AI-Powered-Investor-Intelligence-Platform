@@ -5,7 +5,7 @@
 An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
 
-**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI (build/lint/test) runs on every push via GitHub Actions.
+**Status: Phase 1 complete, Phase 2 Tier 1 complete** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service via a one-click CD workflow; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI (build/lint/test) runs on every push via GitHub Actions.
 
 ## How it works
 
@@ -154,7 +154,11 @@ To run it (from the Actions tab, or `gh workflow run deploy.yml`), the repo need
 
 Set them with `gh secret set <NAME>` or via the repo's Settings → Secrets and variables → Actions.
 
-**Status: workflow is written and YAML-validated, but not yet exercised against a live cluster** — ACR and AKS are currently torn down between sessions for cost control (see below), so this hasn't run end-to-end yet. It's ready to go the next time both exist.
+Two things the workflow does **not** set up for you, needed once per fresh ACR/AKS pair:
+- **AKS needs pull access to ACR** — `az aks update --resource-group investor-intelligence-rg --name <aks-name> --attach-acr <acr-name>` (or the "Integrations" tab during AKS creation). Without this, pods sit in `ImagePullBackOff` with a 401 error even though the image pushed successfully.
+- **The `investor-intel-secrets` Kubernetes secret** — holds the same values as `.env` (Postgres/Azure Search/Azure OpenAI credentials) so the pod can actually start; see step 2 of [Deploying to Azure](#deploying-to-azure) above.
+
+**Status: verified live end-to-end** (2026-08-12) — `/health`, `/api/metrics` (real Postgres data), and the React frontend all confirmed serving through the LoadBalancer IP after a real `workflow_dispatch` run.
 
 ## Azure Resources
 
@@ -175,11 +179,9 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 
 ## Roadmap (Phase 2)
 
-**Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), a React + TypeScript frontend (Vite) replacing the server-rendered dashboard, and CI via GitHub Actions (frontend lint/build, backend import check + pytest suite, Docker build — on every push/PR to `master`).
+**Done — Phase 2 Tier 1 complete:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), a React + TypeScript frontend (Vite) replacing the server-rendered dashboard, CI via GitHub Actions (frontend lint/build, backend import check + pytest suite, Docker build — on every push/PR to `master`), a pytest regression suite for the extraction pipeline (see [Running tests](#running-tests)), and a manual-trigger CD workflow to AKS (see [Continuous Deployment](#continuous-deployment) — verified live end-to-end).
 
-**Also done:** a pytest regression suite for the LangGraph extraction pipeline (see [Running tests](#running-tests)), and a manual-trigger CD workflow to AKS (see [Continuous Deployment](#continuous-deployment) — written and validated, not yet exercised against a live cluster).
-
-**Planned:** exercising the CD workflow for real once ACR/AKS are recreated, and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
+**Planned (Tier 2, time permitting):** a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
 ## Notes
 
