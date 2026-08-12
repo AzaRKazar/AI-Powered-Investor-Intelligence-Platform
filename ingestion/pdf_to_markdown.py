@@ -5,6 +5,7 @@ import pymupdf
 import pymupdf4llm
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.core.credentials import AzureKeyCredential
+from azure.core.exceptions import HttpResponseError
 
 # Below this many extractable characters (summed across every page), a PDF is
 # treated as scanned/image-only rather than genuinely sparse - real 10-Ks run
@@ -109,15 +110,26 @@ def ocr_via_document_intelligence(pdf_file: Path) -> str:
         credential=AzureKeyCredential(api_key)
     )
 
-    with open(pdf_file, "rb") as f:
-        poller = client.begin_analyze_document(
-            "prebuilt-read",
-            body=f,
-            content_type="application/pdf",
-            output_content_format="markdown"
-        )
+    try:
+        with open(pdf_file, "rb") as f:
+            poller = client.begin_analyze_document(
+                "prebuilt-read",
+                body=f,
+                content_type="application/pdf",
+                output_content_format="markdown"
+            )
 
-    result = poller.result()
+        result = poller.result()
+    except HttpResponseError as exc:
+        size_mb = pdf_file.stat().st_size / 1_000_000
+        reason = exc.error.message if exc.error else exc.message
+
+        raise RuntimeError(
+            f"Azure Document Intelligence OCR failed for {pdf_file.name} "
+            f"({size_mb:.1f} MB): {reason}. If this mentions content/file "
+            f"size, the Free (F0) tier has a lower size cap than Standard "
+            f"(S0) - check the resource's pricing tier in the Azure Portal."
+        ) from exc
 
     return result.content or ""
 
