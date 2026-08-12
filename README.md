@@ -148,8 +148,8 @@ To run it (from the Actions tab, or `gh workflow run deploy.yml`), the repo need
 
 | Secret | Where to get it |
 |---|---|
-| `ACR_LOGIN_SERVER` | ACR resource → Overview → "Login server" (e.g. `<name>.azurecr.io`) |
-| `ACR_USERNAME` / `ACR_PASSWORD` | ACR resource → Access keys (enable "Admin user") |
+| `LOGIN_SERVER` | ACR resource → Overview → "Login server" (e.g. `<name>.azurecr.io`) |
+| `USERNAME` / `PASSWORD` | ACR resource → Access keys (enable "Admin user") |
 | `KUBE_CONFIG_B64` | `az aks get-credentials --resource-group investor-intelligence-rg --name <aks-name> --file - \| base64 -w0` |
 
 Set them with `gh secret set <NAME>` or via the repo's Settings → Secrets and variables → Actions.
