@@ -23,3 +23,7 @@ venv/
 
 # Sample PDFs - test fixtures, not needed at runtime (app receives uploads via the API)
 data/raw_pdfs/
+
+# Frontend build artifacts - rebuilt fresh by the Dockerfile's frontend-build stage
+frontend/node_modules/
+frontend/dist/

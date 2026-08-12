@@ -1,0 +1,43 @@
+:root {
+    --bg-primary: #f6f5f2;
+    --bg-secondary: #ffffff;
+    --bg-sidebar: #ffffff;
+    --border-color: rgba(11, 11, 11, 0.09);
+    --border-hover: rgba(11, 11, 11, 0.18);
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+
+    /* Validated categorical palette (light-surface steps), fixed order per KPI card */
+    --cat-1: #2a78d6;   /* blue      - Revenue */
+    --cat-2: #eb6834;   /* orange    - Net Income */
+    --cat-3: #1baf7a;   /* aqua      - Operating Income */
+    --cat-4: #eda100;   /* yellow    - Cash Flow */
+    --cat-5: #e0459a;   /* magenta (darkened for text contrast) - Total Assets */
+    --cat-6: #6a4fd6;   /* violet    - Total Liabilities */
+
+    --cat-1-bg: rgba(42, 120, 214, 0.12);
+    --cat-2-bg: rgba(235, 104, 52, 0.12);
+    --cat-3-bg: rgba(27, 175, 122, 0.12);
+    --cat-4-bg: rgba(237, 161, 0, 0.14);
+    --cat-5-bg: rgba(224, 69, 154, 0.12);
+    --cat-6-bg: rgba(106, 79, 214, 0.12);
+
+    /* Brand: a bold, energetic gradient pair distinct from the categorical set */
+    --brand-1: #ff5fa2;
+    --brand-2: #6a4fd6;
+    --brand-3: #2a78d6;
+    --brand-bg: rgba(255, 95, 162, 0.10);
+
+    --status-good: #0ca30c;
+    --status-critical: #d03b3b;
+    --status-good-bg: rgba(12, 163, 12, 0.10);
+    --status-critical-bg: rgba(208, 59, 59, 0.09);
+
+    --shadow-sm: 0 1px 3px 0 rgba(20, 15, 45, 0.06);
+    --shadow-md: 0 8px 24px -6px rgba(20, 15, 45, 0.10), 0 2px 8px -2px rgba(20, 15, 45, 0.06);
+    --shadow-lg: 0 20px 44px -12px rgba(20, 15, 45, 0.16), 0 6px 16px -4px rgba(20, 15, 45, 0.08);
+    --shadow-glow: 0 8px 28px -6px rgba(255, 95, 162, 0.35);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}

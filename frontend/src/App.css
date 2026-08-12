@@ -1,0 +1,12 @@
+.dashboard-wrapper {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 300px 1fr 380px;
+    min-height: 100vh;
+    transition: grid-template-columns 0.35s var(--ease-smooth);
+}
+
+.dashboard-wrapper.chat-collapsed {
+    grid-template-columns: 300px 1fr;
+}
