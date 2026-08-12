@@ -7,7 +7,7 @@ An AI-powered platform for uploading company annual reports (PDFs), extracting f
 
 **Status: Phase 1 complete, Phase 2 Tier 1 complete** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service via a one-click CD workflow; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI (build/lint/test) runs on every push via GitHub Actions.
 
-For the full system design — component diagrams, sequence flows, database/index schemas, API contracts, and the reasoning behind each major decision — see **[docs/architecture.md](docs/architecture.md)**.
+For the full system design — component diagrams, sequence flows, database/index schemas, API contracts, and the reasoning behind each major decision — see **[docs/architecture.md](docs/architecture.md)**. For the narrative version — the actual build order, real bugs hit and fixed, cost tradeoffs, and the story behind each decision — see **[docs/build-story.md](docs/build-story.md)**.
 
 ## How it works
 
