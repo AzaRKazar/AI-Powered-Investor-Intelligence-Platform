@@ -42,6 +42,11 @@ jobs:
       # Byte-compiles every module to catch syntax errors repo-wide.
       - run: python -m compileall -q database ingestion llm rag routes vectorstore app.py
 
+      # app.py mounts frontend/dist at import time (StaticFiles errors if the
+      # directory is missing); in production the Docker build always creates
+      # it first, so stub it here rather than duplicating the frontend build.
+      - run: mkdir -p frontend/dist && touch frontend/dist/index.html
+
       # Imports the real FastAPI app, exercising the actual router/module
       # graph. Safe without live Azure credentials: every client (DB engine,
       # Azure OpenAI, Azure AI Search) is constructed lazily inside request
