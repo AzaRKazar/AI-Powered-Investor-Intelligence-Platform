@@ -25,7 +25,7 @@ For the full system design — component diagrams, sequence flows, database/inde
 
 **Architecture — From one upload to a verified, live deployment**
 
-![Dashboard KPI cards](images/architectire.png)
+![Architecture](images/architecture.png)
 
 **Company deep-dive — AI-extracted risk factors and growth drivers (Microsoft)**
 
