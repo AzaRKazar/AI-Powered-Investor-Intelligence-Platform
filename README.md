@@ -5,7 +5,7 @@
 An AI-powered platform for uploading company annual reports (PDFs), extracting financial KPIs with an LLM, indexing content for semantic search, and answering questions via a RAG-based chatbot — with a live dashboard for browsing extracted metrics across companies.
 
 
-**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI runs on every push via GitHub Actions.
+**Status: Phase 1 complete, Phase 2 in progress** — running end-to-end locally, containerized, and deployed live to Azure Kubernetes Service; KPI extraction now runs as a LangGraph state machine with confidence-based retries, the dashboard is now a React + TypeScript SPA, and CI (build/lint/test) runs on every push via GitHub Actions.
 
 ## How it works
 
@@ -104,6 +104,15 @@ python app.py
 ```
 Visit **http://localhost:8000** — FastAPI serves the built React app directly.
 
+## Running tests
+
+```bash
+uv pip install -r requirements-dev.txt
+pytest -v
+```
+
+The suite covers the LangGraph KPI extraction pipeline (retry/validation logic, retrieval dedup) using real annual-report excerpts already committed under `data/markdown/`, with the LLM and retriever mocked — no live Azure credentials needed. This is the same command CI runs on every push/PR.
+
 ## Running with Docker
 
 ```bash
@@ -150,7 +159,7 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 
 ## Roadmap (Phase 2)
 
-**Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), a React + TypeScript frontend (Vite) replacing the server-rendered dashboard, and CI via GitHub Actions (frontend lint/build, backend import check, Docker build — on every push/PR to `master`).
+**Done:** LangGraph state-machine refactor of the RAG + KPI extraction flow (confidence-based retry loop), a React + TypeScript frontend (Vite) replacing the server-rendered dashboard, and CI via GitHub Actions (frontend lint/build, backend import check + pytest suite, Docker build — on every push/PR to `master`).
 
 **Planned:** automated deploy to AKS (manual-trigger, once ACR/AKS are recreated — currently torn down between sessions for cost control), and (time permitting) a NoSQL split for unstructured data and a lightweight risk-scoring model on stored KPIs.
 
