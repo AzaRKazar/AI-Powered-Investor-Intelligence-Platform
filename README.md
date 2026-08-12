@@ -169,13 +169,14 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 * **Azure OpenAI** — `gpt-5-mini` (chat) + `text-embedding-ada-002` (embeddings) deployments
 * **Azure Container Registry** — Basic tier
 * **Azure Kubernetes Service** — single-node cluster, smallest viable x86 VM size available in-region
+* **Azure Document Intelligence** *(optional)* — Free (F0) tier; only needed as an OCR fallback for scanned/image-only PDFs (see [Known Limitations](#known-limitations)). The app runs fine without it — that fallback path only triggers when a PDF has no extractable text at all.
 
 **Cost discipline**: a Cost Management budget alert is set on the resource group; Postgres and AKS are stopped between work sessions (both bill continuously while running, unlike AI Search's free tier and Azure OpenAI's pure pay-per-use pricing).
 
 ## Known Limitations
 
 * **Table-formatted financial data can be lost during chunking.** `SemanticChunker` splits on prose sentence boundaries; some companies present certain figures (e.g. total liabilities) as Markdown tables rather than sentences, which can fail to embed cleanly. Confirmed on a real Tesla 10-K: most fields (revenue, net income, cash flow, risk factors, growth drivers) extracted correctly, but two table-only figures did not. A proper fix would need table-aware chunking at the ingestion layer.
-* **PDF quality varies.** A scanned/image-only PDF (no extractable text layer) will produce empty KPIs — this is a fundamental limit of text extraction, not a bug in the pipeline.
+* **PDF quality varies — mostly mitigated.** A scanned/image-only PDF has no extractable text layer for `pymupdf4llm` to read, which used to mean empty KPIs. Ingestion now detects this (checks total extractable characters across the PDF before conversion) and falls back to OCR via Azure Document Intelligence's `prebuilt-read` model. This needs `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT`/`API_KEY` set (see [Azure Resources](#azure-resources)) — without them, a scanned PDF still produces empty KPIs, now with a clear error in the logs instead of a silent null result.
 
 ## Roadmap (Phase 2)
 
