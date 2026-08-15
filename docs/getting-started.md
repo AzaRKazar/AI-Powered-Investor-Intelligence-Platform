@@ -50,6 +50,7 @@ This is the part that trips up most beginners, so it gets the most detail. Every
 **Why this project uses it**: the extracted numbers are structured (revenue, net income, etc.) and need to be queried and displayed reliably — a normal SQL database is the right tool for that, as opposed to the vector search database (3.2), which is for *unstructured* text.
 
 **How to create it**:
+
 1. Portal → **Create a resource** → search **"Azure Database for PostgreSQL flexible servers"** → Create
 2. Choose your resource group and region
 3. Compute + storage: pick **Burstable**, smallest size (**B1ms**) — cheap and plenty for this project's scale
@@ -68,6 +69,7 @@ This is the part that trips up most beginners, so it gets the most detail. Every
 **Why this project uses it**: after a PDF is chunked, every chunk gets stored here. When the app needs to answer "what are Apple's risk factors," it doesn't re-read the whole PDF — it asks this service for the most relevant chunks first.
 
 **How to create it**:
+
 1. Portal → **Create a resource** → search **"Azure AI Search"** → Create
 2. Choose your resource group and region
 3. Pricing tier: **Free (F0)** — sufficient for this project, and there's no cost
@@ -88,8 +90,8 @@ This is the part that trips up most beginners, so it gets the most detail. Every
 1. Portal → **Create a resource** → search **"Azure OpenAI"** → Create (if you don't see access, you may need to request it first via the same search result's information page)
 2. Choose your resource group and region (not every region has every model — `East US` is a safe, commonly-available choice)
 3. Once created, go to **Azure AI Foundry** (the model deployment interface, linked from the resource's Overview page) and deploy two separate models:
-   - A chat model (this project uses `gpt-5-mini`) — give the deployment a name, you'll reference it by that name
-   - An embedding model (this project uses `text-embedding-ada-002`) — same, name it
+    - A chat model (this project uses `gpt-5-mini`) — give the deployment a name, you'll reference it by that name
+    - An embedding model (this project uses `text-embedding-ada-002`) — same, name it
 4. From the resource's **Keys and Endpoint** page, grab the endpoint URL and an API key
 
 **What you'll need from it**: endpoint, API key, API version (a date string Azure uses to version its API, e.g. `2024-10-21`), and the two deployment names you chose.
@@ -107,6 +109,7 @@ This is the part that trips up most beginners, so it gets the most detail. Every
 **Do you need it?** Only if you plan to upload a scanned PDF. The app runs completely fine without it for any normal, text-based PDF.
 
 **How to create it**:
+
 1. Portal → **Create a resource** → search **"Document Intelligence"** → Create
 2. Pricing tier: **Free (F0)** covers light use (500 pages/month); if you hit a file-size limit on a large scanned PDF, switch to **Standard (S0)** — see the [Continuous Deployment](../README.md#continuous-deployment) section of the README for a real example of this happening
 3. Grab endpoint + key from **Keys and Endpoint**
