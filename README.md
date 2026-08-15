@@ -177,7 +177,9 @@ All resources live in a single dedicated resource group for easy teardown. Provi
 * **Azure Kubernetes Service** — single-node cluster, smallest viable x86 VM size available in-region
 * **Azure Document Intelligence** *(optional)* — Free (F0) tier; only needed as an OCR fallback for scanned/image-only PDFs (see [Known Limitations](#known-limitations)). The app runs fine without it — that fallback path only triggers when a PDF has no extractable text at all.
 
-**Cost discipline**: a Cost Management budget alert is set on the resource group; Postgres and AKS are stopped between work sessions (both bill continuously while running, unlike AI Search's free tier and Azure OpenAI's pure pay-per-use pricing).
+**Cost discipline**: a Cost Management budget alert is set on the resource group; Postgres is stopped between work sessions (bills continuously while running, unlike AI Search's free tier and Azure OpenAI's pure pay-per-use pricing).
+
+**AKS gotcha, confirmed the hard way**: `az aks stop` only deallocates node compute — it does *not* stop the Standard Load Balancer or the Standard static Public IP(s) AKS provisions in its auto-created `MC_*` node resource group, and both keep billing hourly regardless of cluster power state. Because of this, AKS gets **deleted** between work sessions instead of just stopped, and recreated when actually needed (see [Deploying to Azure](#deploying-to-azure) and [Continuous Deployment](#continuous-deployment) — both are already written to be repeatable from scratch).
 
 ## Known Limitations
 
